@@ -1,5 +1,5 @@
 {
-    "name": "nubera-ebusiness/intercom-php",
+    "name": "cakemail/intercom-php",
     "version": "0.1.6",
     "type": "library",
     "description": "Connectivity with the Intercom API",

@@ -59,6 +59,21 @@ class Intercom
      */
     private $debug = false;
 
+    protected $apiFields = array(
+        'user' => array(
+            'user_id',
+            'email',
+            'name',
+            'created_at',
+            'last_seen_ip',
+            'custom_data',
+            'last_seen_user_agent',
+            'companies',
+            'last_request_at',
+            'unsubscribed_from_emails',
+        )
+    );
+
     /**
      * The constructor
      *
@@ -215,97 +230,16 @@ class Intercom
         return $this->httpCall($this->apiEndpoint . $path, 'POST', json_encode($data));
     }
 
-    /**
-     * Create a user on your Intercom account.
-     *
-     * @param  string $id                     The ID of the user to be created
-     * @param  string $email                  The user's email address (optional)
-     * @param  string $name                   The user's name (optional)
-     * @param  array  $customData             Any custom data to be aggregate to the user's record (optional)
-     * @param  long   $createdAt              UNIX timestamp describing the date and time when the user was created (optional)
-     * @param  string $lastSeenIp             The last IP address where the user was last seen (optional)
-     * @param  string $lastSeenUserAgent      The last user agent of the user's browser (optional)
-     * @param  long   $lastRequestAt          UNIX timestamp of the user's last request (optional)
-     * @param  bool   $unsubscribedFromEmails The user's email subscription status (optional)
-     * @param  string $method                 HTTP method, to be used by updateUser()
-     * @return object
-     **/
-    public function createUser($id,
-                               $email = null,
-                               $name = null,
-                               $customData = array(),
-                               $createdAt = null,
-                               $lastSeenIp = null,
-                               $lastSeenUserAgent = null,
-                               $lastRequestAt = null,
-                               $unsubscribedFromEmails = null,
-                               $method = 'POST')
+    public function createUser($id, $properties = array())
     {
-        $data = array();
-
-        $data['user_id'] = $id;
-
-        if (!empty($email)) {
-            $data['email'] = $email;
-        }
-
-        if (!empty($name)) {
-            $data['name'] = $name;
-        }
-
-        if (!empty($createdAt)) {
-            $data['created_at'] = $createdAt;
-        }
-
-        if (!empty($lastSeenIp)) {
-            $data['last_seen_ip'] = $lastSeenIp;
-        }
-
-        if (!empty($lastSeenUserAgent)) {
-            $data['last_seen_user_agent'] = $lastSeenUserAgent;
-        }
-
-        if (!empty($lastRequestAt)) {
-            $data['last_request_at'] = $lastRequestAt;
-        }
-
-        if (!empty($customData)) {
-            $data['custom_data'] = $customData;
-        }
-
-        if (is_bool($unsubscribedFromEmails)) {
-            $data['unsubscribed_from_emails'] = $unsubscribedFromEmails;
-        }
-
-        $path = 'users';
-        return $this->httpCall($this->apiEndpoint . $path, $method, json_encode($data));
+        $data = array('user_id' => $id) + $this->getDataFromProperties('user', $properties);
+        return $this->httpCall(sprintf('%susers',$this->apiEndpoint), 'POST', json_encode($data));
     }
 
-    /**
-     * Update an existing user on your Intercom account.
-     *
-     * @param  string $id                     The ID of the user to be updated
-     * @param  string $email                  The user's email address (optional)
-     * @param  string $name                   The user's name (optional)
-     * @param  array  $customData             Any custom data to be aggregate to the user's record (optional)
-     * @param  long   $createdAt              UNIX timestamp describing the date and time when the user was created (optional)
-     * @param  string $lastSeenIp             The last IP address where the user was last seen (optional)
-     * @param  string $lastSeenUserAgent      The last user agent of the user's browser (optional)
-     * @param  long   $lastRequestAt          UNIX timestamp of the user's last request (optional)
-     * @param  bool   $unsubscribedFromEmails The user's email subscription status (optional)
-     * @return object
-     **/
-    public function updateUser($id,
-                               $email = null,
-                               $name = null,
-                               $customData = array(),
-                               $createdAt = null,
-                               $lastSeenIp = null,
-                               $lastSeenUserAgent = null,
-                               $lastRequestAt = null,
-                               $unsubscribedFromEmails = null)
+    public function updateUser($id, $properties = array())
     {
-        return $this->createUser($id, $email, $name, $customData, $createdAt, $lastSeenIp, $lastSeenUserAgent, $lastRequestAt, $unsubscribedFromEmails, 'PUT');
+        $data = array('user_id' => $id) + $this->getDataFromProperties('user', $properties);
+        return $this->httpCall(sprintf('%susers',$this->apiEndpoint), 'PUT', json_encode($data));
     }
 
     /**
@@ -495,5 +429,17 @@ class Intercom
         return $this->createTag($name, $emails, $userIds, $color, $action, 'PUT');
 
     }
+
+    protected function getDataFromProperties($type, array $properties)
+    {
+        $data = array();
+        $fields = $this->apiFields[$type];
+
+        foreach($fields as $field) {
+            if(isset($properties[$field])) {
+                $data[$field] = $properties[$field];
+            }
+        }
+        return $data;
+    }
 }
-?>

@@ -90,6 +90,23 @@ class Intercom
     }
 
     /**
+     * Unsubscribe the user
+     *
+     * @access public
+     * @param  string   $email
+     * @return stdClass
+     */
+    public function unsubscribe($email)
+    {
+        $payload = array(
+            'email' => $email,
+            'unsubscribed_from_emails' => true,
+        );
+
+        return $this->httpCall($this->apiEndpoint.'users', 'POST', json_encode($payload));
+    }
+
+    /**
      * Check if a given value is an e-mail address.
      *
      * @param  string $value
